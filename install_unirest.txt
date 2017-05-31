@@ -1,0 +1,7 @@
+# to install unirest, do the following:
+# 1. install python 2.7.x (if not already installed)
+# 2. download unirest package (e.g. Unirest-1.1.7.tar.gz) from http://unirest.io/python
+# 3. extract the package files (use 7.zip)
+# 4. open cmd.exe
+# 5. navigate to package folder (where setup.py is)
+# 6. to install, type: "C:\Program Files (x86)\Python27\python.exe" setup.py install
