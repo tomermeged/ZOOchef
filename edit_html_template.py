@@ -1,20 +1,53 @@
 # for python 2.7
 
+# Response object:
+# Upon receiving a response, Unirest returns the result in the form of an Object.
+# This object should always have the same keys for each language regarding to the response details.
+#
+# Response.code - HTTP Response Status Code (Example 200)
+# Response.headers- HTTP Response Headers
+# Response.body- Parsed response body where applicable, for example JSON responses are parsed to Objects / Associative Arrays.
+# Response.raw_body- Un-parsed response body
 
-import os
 
+
+from common import *
 from recipe_objects import *
 
-# consts:
-num_ingredients_template = 35
-project_path = str(os.environ.get('zoocheff_path')) # need to set envirronment var "zoocheff_path"
-
-def save_recipe_data() :
+def save_recipe_orig_data() :
 	recipe_name = attributes[1]["title"]
 	recipe_name = recipe_name.replace(' ', '_')
 	
 	os.system("mkdir " + recipe_name)
-	os.system("copy recipe_objects.py " + project_path + recipe_name + "\\" + recipe_name  + "_objects.py")
+	os.system("copy recipe_objects.py " + GlobalProjectPath + recipe_name + "\\" + recipe_name  + "_objects.py")
+
+
+def convert_containers(TargetUnit, indx) :		
+	# convert containers
+	convert = "convert?"
+	ingredientName = ingredients[indx]["name"]
+	sourceAmount = str(ingredients[indx]["amount"])
+	sourceUnit = ingredients[indx]["unit"]
+	convert_containers_response = unirest.get(GlobalSpoonacularServer + convert + 
+												"ingredientName=" + ingredientName + 
+												"&sourceAmount=" + sourceAmount + 
+												"&sourceUnit=" + sourceUnit + 
+												"&targetUnit=" + TargetUnit,
+	  headers={
+		"X-Mashape-Key": GlobalMyMashapeKey,
+		"Accept": "application/json"
+	  }
+	)
+	
+	return convert_containers_response.body
+	# example response:
+	# {"sourceAmount":2.0,
+	# "sourceUnit":"teaspoons",
+	# "targetAmount":4.0,
+	# "targetUnit":"grams",
+	# "answer":"2 teaspoons cornstarch translates to 4 grams.",
+	# "type":"CONVERSION"}
+	
 
 def edit_html_template() :
 
@@ -23,8 +56,8 @@ def edit_html_template() :
 	html_template_filename = "html_template\zoo_cheff_templateDraft.htm"
 	new_html_recipe_filename = attributes[1]["title"] + "_" + str(attributes[1]["id"]) + ".htm"
 
-	f_html_template = file(project_path + html_template_filename, 'r')
-	f_new_html_recipe = file(project_path + new_html_recipe_filename, 'w')
+	f_html_template = file(GlobalProjectPath + html_template_filename, 'r')
+	f_new_html_recipe = file(GlobalProjectPath + new_html_recipe_filename, 'w')
 
 	new_recipe_data = f_html_template.read()
 	
@@ -32,80 +65,49 @@ def edit_html_template() :
 	new_recipe_data = new_recipe_data.replace("sourceURL", str(attributes[0]["sourceUrl"]))
 
 	num_ingredients = len(ingredients)
-	# for indx in range(0, num_ingredients_template):
-		# if indx < num_ingredients:
-			# new_recipe_data = new_recipe_data.replace("AMOUNT#" + str(indx) + "#", str(ingredients[indx]["amount"]))
-			# new_recipe_data = new_recipe_data.replace("UNIT#" + str(indx) + "#", str(ingredients[indx]["unit"]))
-			# new_recipe_data = new_recipe_data.replace("INGREDIENT#" + str(indx) + "#", str(ingredients[indx]["name"]))
-		# else:
-			# new_recipe_data = new_recipe_data.replace("AMOUNT#" + str(indx) + "#", "")
-			# new_recipe_data = new_recipe_data.replace("UNIT#" + str(indx) + "#", "")
-			# new_recipe_data = new_recipe_data.replace("INGREDIENT#" + str(indx) + "#", "")
-			
-	for indx in range(0, num_ingredients_template):
+	
+	for indx in range(0, ConstNumIngredientsTemplate):
+		idx = str(indx)
 		if indx < num_ingredients:
-			new_recipe_data = new_recipe_data.replace("ORIGINALSTRING#" + str(indx) + "#", str(ingredients[indx]["originalString"]))
+			if GlobalConvertUnitServer == 1:
+				ConvertedIngredients = convert_containers(TargetUnit, indx)
+				Amount = ConvertedIngredients["targetAmount"]
+				Unit = ConvertedIngredients["targetUnit"]
+			else:
+				Amount = ingredients[indx]["amount"]
+				Unit = ingredients[indx]["unit"]
+			if GlobalScale != 1 or GlobalConvertUnitServer == 1:
+				new_recipe_data = new_recipe_data.replace("AMOUNT#" + idx + "#", str(Amount * GlobalScale) + " ")
+				new_recipe_data = new_recipe_data.replace("UNIT#" + idx + "#", str(Unit) + " ")
+				new_recipe_data = new_recipe_data.replace("INGREDIENT#" + idx + "#", str(ingredients[indx]["name"]) + " (orig: " + str(ingredients[indx]["originalString"]) + ")")
+			else:	
+				new_recipe_data = new_recipe_data.replace("AMOUNT#" + idx + "#UNIT#" + idx + "#INGREDIENT#" + idx + "#", str(ingredients[indx]["originalString"]))
 		else:
-			new_recipe_data = new_recipe_data.replace("ORIGINALSTRING#" + str(indx) + "#", "")
+			new_recipe_data = new_recipe_data.replace("AMOUNT#" + idx + "#", "")
+			new_recipe_data = new_recipe_data.replace("UNIT#" + idx + "#", "")
+			new_recipe_data = new_recipe_data.replace("INGREDIENT#" + idx + "#", "")
 
 			
 	# new_recipe_data = new_recipe_data.replace("Instruction#" + "1" + "#", str(instructions))
 
 	num_steps = len(steps)
-	for indx in range(0, num_ingredients_template):
+	for indx in range(0, ConstNumIngredientsTemplate):
+		idx = str(indx)
 		if indx < num_steps:
-			new_recipe_data = new_recipe_data.replace("STEP#" + str(indx) + "#", str(steps[indx]["number"]) + ". " + str(steps[indx]["step"]))
+			new_recipe_data = new_recipe_data.replace("STEP#" + idx + "#", str(steps[indx]["number"]) + ". " + str(steps[indx]["step"]))
 		else:
-			new_recipe_data = new_recipe_data.replace("STEP#" + str(indx) + "#", "")
+			new_recipe_data = new_recipe_data.replace("STEP#" + idx + "#", "")
 
 
 			
 	f_new_html_recipe.write(new_recipe_data)
 
 
-
-
-	# add_ingredients = 0
-	# for line in f_html_template:
-
-		# if add_ingredients == 1:
-			# for indx in range(0, num_ingredients):
-				# f_html_template.write(ingredients[indx]["amount"] + "\n")
-			# add_ingredients = 0
-			# break
-		# if IngredientListPatternBelow in line:
-			# add_ingredients = 1
-
-
-	# {"id":6008,
-	# "aisle":"Canned and Jarred",
-	# "image":"https://spoonacular.com/cdn/ingredients_100x100/bouillon-cube.jpg",
-	# "name":"beef bouillon",
-	# "amount":4.0,
-	# "unit":"cubes",
-	# "unitShort":"cubes",
-	# "unitLong":"cubes",
-	# "originalString":"4 cubes beef bouillon, crumbled",
-	# "metaInformation":["crumbled"]},
-
-
-
-	# print(attributes[0]["sourceUrl"])
-
-	# num_ingredients = len(ingredients)
-	# for indx in range(0, num_ingredients):
-		# print(ingredients[indx]["originalString"])
-		
-	# print(instructions)
-
-
 #######################################################################
 #######################################################################
 
-save_recipe_data()
+save_recipe_orig_data()
 edit_html_template()
-
-
 
 
 

@@ -9,28 +9,26 @@
 # Response.body- Parsed response body where applicable, for example JSON responses are parsed to Objects / Associative Arrays.
 # Response.raw_body- Un-parsed response body
 
-import os
-import unirest
-import ast
-import re
 
-MyMashapeKey = "OLG4YvEhlBmshydgWrzvOa8wDLRZp11XcsSjsnS0RwSQYKrzeE"
+from common import *
 
 
-def rip_recipe(project_path, use_server, real_url) :
+def rip_recipe() :
+	
+	print("parsing: " + GlobalRealURL)
+
 	# files & paths:
 	raw_extract_output_filename = "raw_extract_output.txt"
 	raw_analyzedInstructions_output_filename = "raw_analyzedInstructions_output.txt"
 
 	# spoonacular server related:
-	spoonacular_server = "https://spoonacular-recipe-food-nutrition-v1.p.mashape.com/recipes/"
-	extract = "extract?forceExtraction="
+	extract = "extract?"
 	forceExtraction = "false" # have no idea what this is doing
-	analyzedInstructions = "/analyzedInstructions?stepBreakdown="
+	analyzedInstructions = "/analyzedInstructions?"
 	stepBreakdown = "true"
-	url = real_url.replace(':' , '%3A') # ':' = '%3A'
-	url = real_url.replace('/' , '%2F') # '/' = '%2F'
-	url_var = '&url='
+
+	url = GlobalRealURL.replace(':' , '%3A') # ':' = '%3A'
+	url = GlobalRealURL.replace('/' , '%2F') # '/' = '%2F'
 
 
 	# fields to keep:
@@ -39,12 +37,14 @@ def rip_recipe(project_path, use_server, real_url) :
 				  "text"]
 
 
-	if use_server == 1:
+	if GlobalExtractResponseServer == 1:
 		# Extract Recipe from Website using API:
-		print("using server")
-		extract_response = unirest.get(spoonacular_server + extract + forceExtraction + url_var + url,
+		print("using server for: extract_response" )
+		extract_response = unirest.get(GlobalSpoonacularServer + extract + 
+										"forceExtraction=" + forceExtraction + 
+										"&url=" + url,
 		  headers={
-			"X-Mashape-Key": MyMashapeKey
+			"X-Mashape-Key": GlobalMyMashapeKey
 		  }
 		)
 
@@ -52,28 +52,30 @@ def rip_recipe(project_path, use_server, real_url) :
 		keep = re.search('}],"id":(.+?),"', extract_response.raw_body)
 		recipe_id = keep.group(1)
 		# Analyzed Recipe Instructions using API:
-		analyzedInstructions_response = unirest.get(spoonacular_server + recipe_id + analyzedInstructions + stepBreakdown,
+		
+		analyzedInstructions_response = unirest.get(GlobalSpoonacularServer + recipe_id + analyzedInstructions + 
+													"stepBreakdown=" + stepBreakdown,
 		  headers={
-			"X-Mashape-Key": MyMashapeKey,
+			"X-Mashape-Key": GlobalMyMashapeKey,
 			"Accept": "application/json"
 		  }
 		)
 
 		# write the raw output to file
-		f_raw_extract_output = file(project_path + raw_extract_output_filename, 'w') # open file for write
+		f_raw_extract_output = file(GlobalProjectPath + raw_extract_output_filename, 'w') # open file for write
 		f_raw_extract_output.write(extract_response.raw_body) # write raw data to file
 		attributes_data = instructions_data = ingredients_dict_data = extract_response.raw_body # direct the raw extract_response to a new object for reordering
 
-		f_raw_analyzedInstructions_output = file(project_path + raw_analyzedInstructions_output_filename, 'w') # open file for write
+		f_raw_analyzedInstructions_output = file(GlobalProjectPath + raw_analyzedInstructions_output_filename, 'w') # open file for write
 		f_raw_analyzedInstructions_output.write(analyzedInstructions_response.raw_body) # write raw data to file
 		analyzedInstructions_data = analyzedInstructions_response.raw_body # direct the raw analyzedInstructions_response (from file) to a new objecj
 
 	else:
-		print("not using server")
-		f_raw_extract_output = file(project_path + raw_extract_output_filename, 'r') # open file for read - assuming file exist from previouse runs!!
+		print("not using server for: extract_response")
+		f_raw_extract_output = file(GlobalProjectPath + raw_extract_output_filename, 'r') # open file for read - assuming file exist from previouse runs!!
 		attributes_data = instructions_data = ingredients_dict_data = f_raw_extract_output.read() # direct the raw extract_response (from file) to a new objecj
 
-		f_raw_analyzedInstructions_output = file(project_path + raw_analyzedInstructions_output_filename, 'r') # open file for read - assuming file exist from previouse runs!!
+		f_raw_analyzedInstructions_output = file(GlobalProjectPath + raw_analyzedInstructions_output_filename, 'r') # open file for read - assuming file exist from previouse runs!!
 		analyzedInstructions_data = f_raw_analyzedInstructions_output.read() # direct the raw analyzedInstructions_response (from file) to a new objecj
 
 	f_raw_extract_output.close() # close file
@@ -83,7 +85,7 @@ def rip_recipe(project_path, use_server, real_url) :
 	# **************create ingredient dictionary in src file recipe_objects.py ***************************************************************
 
 	# prepare comments:
-	head_comment = "# coding: utf-8\n\n# these ingredients are based on a recipe from:\n# " + real_url # push comment in the start of buffer
+	head_comment = "# coding: utf-8\n\n# these ingredients are based on a recipe from:\n# " + GlobalRealURL # push comment in the start of buffer
 	ingredients_dict_comment = "\n\n# a list of all ingrediednts:\n" # push comment in the start of buffer
 	instructions_comment = "\n\n# recipe instructions:\n"
 	attributes_comment = "\n\n# recipe attributes:\n"
@@ -118,11 +120,12 @@ def rip_recipe(project_path, use_server, real_url) :
 	analyzedInstructions_data = analyzedInstructions_data.replace('},{"number":', '},\n{"number":')
 	analyzedInstructions_data = analyzedInstructions_data.replace('null', 'None')
 	analyzedInstructions_data = analyzedInstructions_data.replace('}]}]', '}]')
+	
 
 	recipe_objects_filename = "recipe_objects.py"
 		
 	# creating new py source "ingredients_dict.py"
-	f_recipe_objects = file(project_path + recipe_objects_filename, 'w') # open file for write
+	f_recipe_objects = file(GlobalProjectPath + recipe_objects_filename, 'w') # open file for write
 	f_recipe_objects.write(head_comment + # write ingredients_dict and instructions data to file
 						attributes_comment + attributes_data +
 						ingredients_dict_comment + ingredients_dict_data +
@@ -135,7 +138,7 @@ def rip_recipe(project_path, use_server, real_url) :
 
 
 
-
+rip_recipe()
 
 
 

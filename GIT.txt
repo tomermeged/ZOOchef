@@ -1,0 +1,7 @@
+
+git config --global user.email "tomermeged@gmail.com"
+git config --global user.name "Tomer Meged"
+git status
+git commit
+git remote add origin https://github.com/tomermeged/ZOOchef.git
+git push -u origin master
