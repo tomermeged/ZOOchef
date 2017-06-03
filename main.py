@@ -14,7 +14,7 @@ if FindObjectsFile == WordNone or ForceUseServerExtract == 1:
 	os.system("mkdir " + ProjectPath + WordParsedRecipesDB)
 	os.system("copy recipe_objects.py " + ProjectPath + WordParsedRecipesDB + "\\" + FilenameRecipeObjectsUnique)
 else:
-	print("copy " + FindObjectsFile + " " + ProjectPath + FilenameRecipeObjects)
+	info("copy " + FindObjectsFile + " " + ProjectPath + FilenameRecipeObjects)
 	os.system("copy " + FindObjectsFile + " " + ProjectPath + FilenameRecipeObjects)
 
 

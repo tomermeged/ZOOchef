@@ -12,7 +12,12 @@ def find(name, path):
         if name in files:
             return os.path.join(root, name)
 
+def info(string):
+	print("INFO: " + str(string))
 
+def debug(string):
+	if Debug == 1:
+		print("DEBUG: " + str(string))
 
 # words:
 WordParsedRecipesDB = "ParsedRecipesDB"
@@ -27,8 +32,11 @@ SwitchStepBreakdown = "true"
 
 # filenames:
 FilenameRecipeObjects = "recipe_objects.py"
+FilenameIngredientsDB = "Ingredients_DB.py"
 FilenameRawExtractOutput = "raw_extract_output.txt"
 FilenameRawAnalyzedInstructionsOutput = "raw_analyzedInstructions_output.txt"
+FilenameCurrentHTMLRecipe = "latest.htm"
+
 
 # consts:
 ConstNumIngredientsTemplate = 35
@@ -54,11 +62,12 @@ RealURLlist = [	"http://allrecipes.com/recipe/25678/beef-stew-vi/",
 
 # controls:
 ForceUseServerExtract = 0
-UrlNum = 0
+UrlNum = 4
 RealURL = RealURLlist[UrlNum] # number 3 & 4 are not parsed correctly
 Scale = 1
-ConvertUnitServer = 0
+ConvertUnitServer = 1
 TargetUnit = "grams"
+Debug = 1
 
 
 # common names:

@@ -13,36 +13,74 @@
 
 from common import *
 from recipe_objects import *
+from ingredients_DB import *
 
+# def add_to_ing_db(ingredientName, ConvertContainersResponseBody):
 
-def convert_containers(TargetUnit, indx) :		
-	# convert containers
-	global GlobalNumUsedServer
+	# f_IngredientsDB = file(ProjectPath + FilenameIngredientsDB, 'w')
 	
+	# f_IngredientsDB.close()
+
+
+	
+def get_conversion_from_db(sourceUnit, sourceAmount, ConversionTableIndx):
+	DBsourceAmount = ConversionTable[ConversionTableIndx][sourceUnit]
+	NormFactor = DBsourceAmount / sourceAmount
+	DBTargetAmount = ConversionTable[ConversionTableIndx][TargetUnit]
+	
+	return DBTargetAmount * NormFactor
+	
+def check_ing_conversion_exist_db(ingredientName, sourceUnit):
+	TargetUnitExist = SourceUnitExist = False
+	debug(ingredientName)
+	debug(sourceUnit)
+	debug(TargetUnit)
+	for ConversionTableIndx in range(0, ConversionTableSize):
+		if ConversionTable[ConversionTableIndx]["name"] == ingredientName:
+			if sourceUnit in ConversionTable[ConversionTableIndx]:
+				TargetUnitExist = True
+			if TargetUnit in ConversionTable[ConversionTableIndx]:
+				SourceUnitExist = True
+			break
+	
+	if TargetUnitExist  == True and SourceUnitExist  == True:
+		return ConversionTableIndx
+	else:
+		return ConversionTableSize
+	
+def convert_containers(indx) :		
 	ingredientName = ingredients[indx]["name"]
-	sourceAmount = str(ingredients[indx]["amount"])
+	sourceAmount = ingredients[indx]["amount"]
 	sourceUnit = ingredients[indx]["unit"]
-	print("using server(" + str(GlobalNumUsedServer) + "): " + WordConvert)
-	GlobalNumUsedServer += 1
-	convert_containers_response = unirest.get(SpoonacularServer + WordConvert + 
-												"ingredientName=" + ingredientName + 
-												"&sourceAmount=" + sourceAmount + 
-												"&sourceUnit=" + sourceUnit + 
-												"&targetUnit=" + TargetUnit,
-	  headers={
-		"X-Mashape-Key": MyMashapeKey,
-		"Accept": "application/json"
-	  }
-	)
 	
-	return convert_containers_response.body
-	# example response:
-	# {"sourceAmount":2.0,
-	# "sourceUnit":"teaspoons",
-	# "targetAmount":4.0,
-	# "targetUnit":"grams",
-	# "answer":"2 teaspoons cornstarch translates to 4 grams.",
-	# "type":"CONVERSION"}
+	ConversionTableIndx = check_ing_conversion_exist_db(ingredientName, sourceUnit)
+	if  ConversionTableIndx < ConversionTableSize: # exist
+		return get_conversion_from_db(sourceUnit, sourceAmount, ConversionTableIndx)
+		
+	else:
+		global GlobalNumUsedServer
+
+		info("using server(" + str(GlobalNumUsedServer) + "): " + WordConvert)
+		GlobalNumUsedServer += 1
+		ConvertContainersResponse = unirest.get(SpoonacularServer + WordConvert + 
+													"ingredientName=" + ingredientName + 
+													"&sourceAmount=" + str(sourceAmount) + 
+													"&sourceUnit=" + sourceUnit + 
+													"&targetUnit=" + TargetUnit,
+		  headers={
+			"X-Mashape-Key": MyMashapeKey,
+			"Accept": "application/json"
+		  }
+		)
+		# add_to_ing_db(ingredientName, ConvertContainersResponse.body)
+		return ConvertContainersResponse.body["targetAmount"]
+		# example response:	
+		# {u'sourceUnit': u'cup', 
+		# u'targetUnit': u'grams', 
+		# u'sourceAmount': 0.25, 
+		# u'answer': u'0.25 cup chicken broth translates to 58.75 grams.', 
+		# u'targetAmount': 58.75, 
+		# u'type': u'CONVERSION'}
 	
 
 def edit_html_template() :
@@ -62,37 +100,30 @@ def edit_html_template() :
 
 	num_ingredients = len(ingredients)
 	
-	for indx in range(0, ConstNumIngredientsTemplate):
-		idx = str(indx)
-		if indx < num_ingredients:
-			if ConvertUnitServer == 1:
-				ConvertedIngredients = convert_containers(TargetUnit, indx)
-				Amount = ConvertedIngredients["targetAmount"]
-				Unit = ConvertedIngredients["targetUnit"]
-			else:
-				Amount = ingredients[indx]["amount"]
-				Unit = ingredients[indx]["unit"]
-			if Scale != 1 or ConvertUnitServer == 1:
-				new_recipe_data = new_recipe_data.replace("AMOUNT#" + idx + "#", str(Amount * Scale) + " ")
-				new_recipe_data = new_recipe_data.replace("UNIT#" + idx + "#", str(Unit) + " ")
-				new_recipe_data = new_recipe_data.replace("INGREDIENT#" + idx + "#", str(ingredients[indx]["name"]) + " (orig: " + str(ingredients[indx]["originalString"]) + ")")
-			else:	
-				new_recipe_data = new_recipe_data.replace("AMOUNT#" + idx + "#UNIT#" + idx + "#INGREDIENT#" + idx + "#", str(ingredients[indx]["originalString"]))
+	for indx in range(0, num_ingredients):
+		if ConvertUnitServer == 1:
+			Amount = convert_containers(indx)
 		else:
-			new_recipe_data = new_recipe_data.replace("AMOUNT#" + idx + "#", "")
-			new_recipe_data = new_recipe_data.replace("UNIT#" + idx + "#", "")
-			new_recipe_data = new_recipe_data.replace("INGREDIENT#" + idx + "#", "")
-
+			Amount = ingredients[indx]["amount"]
+			Unit = ingredients[indx]["unit"]
+		if Scale != 1 or ConvertUnitServer == 1:
+			new_recipe_data = new_recipe_data.replace("AMOUNT#", str(Amount * Scale) + " ")
+			new_recipe_data = new_recipe_data.replace("UNIT#", TargetUnit + " ")
+			new_recipe_data = new_recipe_data.replace("INGREDIENT#", str(ingredients[indx]["name"]) + " (orig: " + str(ingredients[indx]["originalString"]) + ")" + "\n<p>AMOUNT#UNIT#INGREDIENT#</p>")
+		else:	
+			new_recipe_data = new_recipe_data.replace("AMOUNT#UNIT#INGREDIENT#", str(ingredients[indx]["originalString"]) + "\n<p>AMOUNT#UNIT#INGREDIENT#</p>")
+	new_recipe_data = new_recipe_data.replace("<p>AMOUNT#UNIT#INGREDIENT#</p>", "")
+	
 	num_steps = len(steps)
-	for indx in range(0, ConstNumStepsTemplate):
-		idx = str(indx)
-		if indx < num_steps:
-			new_recipe_data = new_recipe_data.replace("STEP#" + idx + "#", str(steps[indx]["number"]) + ". " + str(steps[indx]["step"]))
-		else:
-			new_recipe_data = new_recipe_data.replace("STEP#" + idx + "#", "")
+	for indx in range(0, num_steps):
+		new_recipe_data = new_recipe_data.replace("STEP#", str(steps[indx]["number"]) + ". " + str(steps[indx]["step"]) + "\n<p>STEP#</p>")
+	new_recipe_data = new_recipe_data.replace("<p>STEP#</p>", "")
 
 
 			
+	f_new_html_recipe.write(new_recipe_data)
+	f_new_html_recipe.close()
+	f_new_html_recipe = file(ProjectPath + FilenameCurrentHTMLRecipe, 'w')
 	f_new_html_recipe.write(new_recipe_data)
 
 

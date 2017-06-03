@@ -15,13 +15,13 @@ from common import *
 
 def rip_recipe() :
 
-	print("parsing: " + RealURL)
+	info("parsing: " + RealURL)
 	
 	global GlobalNumUsedServer
 	
 	
 	# Extract Recipe from Website using API:
-	print("using server(" + str(GlobalNumUsedServer) + "): " + WordExtract)
+	info("using server(" + str(GlobalNumUsedServer) + "): " + WordExtract)
 	GlobalNumUsedServer += 1
 	extract_response = unirest.get(SpoonacularServer + WordExtract +
 									"forceExtraction=" + SwitchForceExtraction +
@@ -35,7 +35,7 @@ def rip_recipe() :
 	recipe_id = extract_response.body["id"]
 	
 	# Analyzed Recipe Instructions using API:
-	print("using server(" + str(GlobalNumUsedServer) + "): " + WordAnalyzedInstructions)
+	info("using server(" + str(GlobalNumUsedServer) + "): " + WordAnalyzedInstructions)
 	GlobalNumUsedServer += 1
 	
 	analyzedInstructions_response = unirest.get(SpoonacularServer + str(recipe_id) + "/" + WordAnalyzedInstructions +
@@ -95,8 +95,6 @@ def create_recipe_objects_file(extract_response, analyzedInstructions_response) 
 	keep = re.search('"text":"(.+?)","instructions"', instructions_data)
 	instructions_data = 'instructions = "' + keep.group(1) + '"\n'
 
-
-	# print(instructions_data)
 	analyzedInstructions_data = analyzedInstructions_data.replace('[{"name":"","steps":[', 'steps = [\n')
 	analyzedInstructions_data = analyzedInstructions_data.replace('},{"number":', '},\n{"number":')
 	analyzedInstructions_data = analyzedInstructions_data.replace('null', 'None')
