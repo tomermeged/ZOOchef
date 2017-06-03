@@ -14,69 +14,50 @@ from common import *
 
 
 def rip_recipe() :
+
+	print("parsing: " + RealURL)
 	
-	print("parsing: " + GlobalRealURL)
+	global GlobalNumUsedServer
+	
+	
+	# Extract Recipe from Website using API:
+	print("using server(" + str(GlobalNumUsedServer) + "): " + WordExtract)
+	GlobalNumUsedServer += 1
+	extract_response = unirest.get(SpoonacularServer + WordExtract +
+									"forceExtraction=" + SwitchForceExtraction +
+									"&url=" + SpoonacularFriendlyURL,
+	  headers={
+		"X-Mashape-Key": MyMashapeKey
+	  }
+	)
 
-	# files & paths:
-	raw_extract_output_filename = "raw_extract_output.txt"
-	raw_analyzedInstructions_output_filename = "raw_analyzedInstructions_output.txt"
+	# find recipe ID:
+	recipe_id = extract_response.body["id"]
+	
+	# Analyzed Recipe Instructions using API:
+	print("using server(" + str(GlobalNumUsedServer) + "): " + WordAnalyzedInstructions)
+	GlobalNumUsedServer += 1
+	
+	analyzedInstructions_response = unirest.get(SpoonacularServer + str(recipe_id) + "/" + WordAnalyzedInstructions +
+												"stepBreakdown=" + SwitchStepBreakdown,
+	  headers={
+		"X-Mashape-Key": MyMashapeKey,
+		"Accept": "application/json"
+	  }
+	)
+	
+	return extract_response, analyzedInstructions_response
 
-	# spoonacular server related:
-	extract = "extract?"
-	forceExtraction = "false" # have no idea what this is doing
-	analyzedInstructions = "/analyzedInstructions?"
-	stepBreakdown = "true"
+def create_recipe_objects_file(extract_response, analyzedInstructions_response) :
+	# write the raw output to file
+	f_raw_extract_output = file(ProjectPath + FilenameRawExtractOutput, 'w') # open file for write
+	f_raw_extract_output.write(extract_response.raw_body) # write raw data to file
+	attributes_data = instructions_data = ingredients_dict_data = extract_response.raw_body # direct the raw extract_response to a new object for reordering
 
-	url = GlobalRealURL.replace(':' , '%3A') # ':' = '%3A'
-	url = GlobalRealURL.replace('/' , '%2F') # '/' = '%2F'
+	f_raw_analyzedInstructions_output = file(ProjectPath + FilenameRawAnalyzedInstructionsOutput, 'w') # open file for write
+	f_raw_analyzedInstructions_output.write(analyzedInstructions_response.raw_body) # write raw data to file
+	analyzedInstructions_data = analyzedInstructions_response.raw_body # direct the raw analyzedInstructions_response (from file) to a new objecj
 
-
-	# fields to keep:
-	keep_fields = ["originalString",
-				  # "instructions",
-				  "text"]
-
-
-	if GlobalExtractResponseServer == 1:
-		# Extract Recipe from Website using API:
-		print("using server for: extract_response" )
-		extract_response = unirest.get(GlobalSpoonacularServer + extract + 
-										"forceExtraction=" + forceExtraction + 
-										"&url=" + url,
-		  headers={
-			"X-Mashape-Key": GlobalMyMashapeKey
-		  }
-		)
-
-		# find recipe ID:
-		keep = re.search('}],"id":(.+?),"', extract_response.raw_body)
-		recipe_id = keep.group(1)
-		# Analyzed Recipe Instructions using API:
-		
-		analyzedInstructions_response = unirest.get(GlobalSpoonacularServer + recipe_id + analyzedInstructions + 
-													"stepBreakdown=" + stepBreakdown,
-		  headers={
-			"X-Mashape-Key": GlobalMyMashapeKey,
-			"Accept": "application/json"
-		  }
-		)
-
-		# write the raw output to file
-		f_raw_extract_output = file(GlobalProjectPath + raw_extract_output_filename, 'w') # open file for write
-		f_raw_extract_output.write(extract_response.raw_body) # write raw data to file
-		attributes_data = instructions_data = ingredients_dict_data = extract_response.raw_body # direct the raw extract_response to a new object for reordering
-
-		f_raw_analyzedInstructions_output = file(GlobalProjectPath + raw_analyzedInstructions_output_filename, 'w') # open file for write
-		f_raw_analyzedInstructions_output.write(analyzedInstructions_response.raw_body) # write raw data to file
-		analyzedInstructions_data = analyzedInstructions_response.raw_body # direct the raw analyzedInstructions_response (from file) to a new objecj
-
-	else:
-		print("not using server for: extract_response")
-		f_raw_extract_output = file(GlobalProjectPath + raw_extract_output_filename, 'r') # open file for read - assuming file exist from previouse runs!!
-		attributes_data = instructions_data = ingredients_dict_data = f_raw_extract_output.read() # direct the raw extract_response (from file) to a new objecj
-
-		f_raw_analyzedInstructions_output = file(GlobalProjectPath + raw_analyzedInstructions_output_filename, 'r') # open file for read - assuming file exist from previouse runs!!
-		analyzedInstructions_data = f_raw_analyzedInstructions_output.read() # direct the raw analyzedInstructions_response (from file) to a new objecj
 
 	f_raw_extract_output.close() # close file
 	f_raw_analyzedInstructions_output.close() # close file
@@ -85,7 +66,7 @@ def rip_recipe() :
 	# **************create ingredient dictionary in src file recipe_objects.py ***************************************************************
 
 	# prepare comments:
-	head_comment = "# coding: utf-8\n\n# these ingredients are based on a recipe from:\n# " + GlobalRealURL # push comment in the start of buffer
+	head_comment = "# coding: utf-8\n\n# these ingredients are based on a recipe from:\n# " + RealURL # push comment in the start of buffer
 	ingredients_dict_comment = "\n\n# a list of all ingrediednts:\n" # push comment in the start of buffer
 	instructions_comment = "\n\n# recipe instructions:\n"
 	attributes_comment = "\n\n# recipe attributes:\n"
@@ -120,12 +101,9 @@ def rip_recipe() :
 	analyzedInstructions_data = analyzedInstructions_data.replace('},{"number":', '},\n{"number":')
 	analyzedInstructions_data = analyzedInstructions_data.replace('null', 'None')
 	analyzedInstructions_data = analyzedInstructions_data.replace('}]}]', '}]')
-	
 
-	recipe_objects_filename = "recipe_objects.py"
-		
-	# creating new py source "ingredients_dict.py"
-	f_recipe_objects = file(GlobalProjectPath + recipe_objects_filename, 'w') # open file for write
+	# creating new py source "recipe_objects.py"
+	f_recipe_objects = file(ProjectPath + FilenameRecipeObjects, 'w') # open file for write
 	f_recipe_objects.write(head_comment + # write ingredients_dict and instructions data to file
 						attributes_comment + attributes_data +
 						ingredients_dict_comment + ingredients_dict_data +
@@ -138,8 +116,8 @@ def rip_recipe() :
 
 
 
-rip_recipe()
-
+extract_response, analyzedInstructions_response = rip_recipe()
+create_recipe_objects_file(extract_response, analyzedInstructions_response)
 
 
 
