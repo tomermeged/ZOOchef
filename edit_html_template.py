@@ -102,13 +102,6 @@ def convert_containers(indx) :
 		f_IngredientsDB.write("ConversionTableSize = len(ConversionTable)" )
 		f_IngredientsDB.close()
 		return ConvertContainersResponse.body["targetAmount"]
-		# example response:
-		# {u'sourceUnit': u'cup',
-		# u'targetUnit': u'grams',
-		# u'sourceAmount': 0.25,
-		# u'answer': u'0.25 cup chicken broth translates to 58.75 grams.',
-		# u'targetAmount': 58.75,
-		# u'type': u'CONVERSION'}
 
 
 def edit_html_template() :
@@ -131,12 +124,13 @@ def edit_html_template() :
 	for indx in range(0, num_ingredients):
 		if ConvertUnitServer == 1:
 			Amount = convert_containers(indx)
+			Unit = TargetUnit
 		else:
 			Amount = ingredients[indx]["amount"]
 			Unit = ingredients[indx]["unit"]
 		if Scale != 1 or ConvertUnitServer == 1:
 			new_recipe_data = new_recipe_data.replace("AMOUNT#", str(Amount * Scale) + " ")
-			new_recipe_data = new_recipe_data.replace("UNIT#", TargetUnit + " ")
+			new_recipe_data = new_recipe_data.replace("UNIT#", Unit + " ")
 			new_recipe_data = new_recipe_data.replace("INGREDIENT#", str(ingredients[indx]["name"]) + " (orig: " + str(ingredients[indx]["originalString"]) + ")" + "\n<p>AMOUNT#UNIT#INGREDIENT#</p>")
 		else:
 			new_recipe_data = new_recipe_data.replace("AMOUNT#UNIT#INGREDIENT#", str(ingredients[indx]["originalString"]) + "\n<p>AMOUNT#UNIT#INGREDIENT#</p>")

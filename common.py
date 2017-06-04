@@ -39,8 +39,6 @@ FilenameCurrentHTMLRecipe = "latest.htm"
 
 
 # consts:
-ConstNumIngredientsTemplate = 35
-ConstNumStepsTemplate = 35
 
 # Global vars:
 GlobalNumUsedServer = 0
@@ -62,10 +60,10 @@ RealURLlist = [	"http://allrecipes.com/recipe/25678/beef-stew-vi/",
 
 # controls:
 ForceUseServerExtract = 0
-UrlNum = 3
+UrlNum = 4
 RealURL = RealURLlist[UrlNum] # number 3 & 4 are not parsed correctly
-Scale = 1
-ConvertUnitServer = 1
+Scale = 2
+ConvertUnitServer = 0
 TargetUnit = "grams"
 Debug = 0
 
