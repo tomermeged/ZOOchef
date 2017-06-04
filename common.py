@@ -62,12 +62,12 @@ RealURLlist = [	"http://allrecipes.com/recipe/25678/beef-stew-vi/",
 
 # controls:
 ForceUseServerExtract = 0
-UrlNum = 4
+UrlNum = 3
 RealURL = RealURLlist[UrlNum] # number 3 & 4 are not parsed correctly
 Scale = 1
 ConvertUnitServer = 1
 TargetUnit = "grams"
-Debug = 1
+Debug = 0
 
 
 # common names:

@@ -1,40 +1,57 @@
-
-# ingredients DB
-# this file will contain conversion tables for any previously converted ingredient
-
-
-
 ConversionTable = [
-{"name":"carrots","id":11124,"aisle":"Produce","grams":200.0},
-{"name":"chicken broth","id":6194,"aisle":"Produce","cup":0.25,"grams":58.75},
-{"id":11120421,"aisle":"Pasta and Rice","name":"cooked penne pasta","cups":3.0,"grams":255.0},
-{"id":14106,"aisle":"Alcoholic Beverages","name":"dry white wine","bottle":0.25,"grams":187.5},
-{"id":11215,"aisle":"Produce","name":"garlic cloves","clove":3.0,"grams":9.0},
-{"id":1009195,"aisle":"Canned and Jarred","name":"kalamata olives","cup":0.25,"grams":33.75},
-{"id":93828,"aisle":"Canned and Jarred","name":"marinated artichoke hearts","ounce":6.0,"grams":170.1},
-{"id":4053,"aisle":"Oil, Vinegar, Salad Dressing","name":"olive oil","tablespoon":1.0,"grams":14.0},
-{"id":2027,"aisle":"Produce;Spices and Seasonings","name":"oregano","teaspoon":1.0,"grams":2.0},
-{"id":11916,"aisle":"Canned and Jarred","name":"roasted red peppers","ounce":7.0,"grams":198.45},
-{"id":1055062,"aisle":"Meat","name":"skinless boneless chicken breast","ounces":12.0,"grams":340.19}
+{u'': 4.0, 'aisle': 'Produce', u'grams': 244.0, u'g': 200.0, u'cups': 3.0, 'id': 11124, 'name': 'carrots'},
+{'aisle': 'Produce', u'grams': 160.0, u'g': 120.0, u'stalks': 4.0, 'id': 11143, 'name': 'celery'},
+{u'': 2.0, 'aisle': 'Produce', u'grams': 34.0, 'id': 10311529, 'name': 'cherry tomatoes'},
+{'aisle': 'Pasta and Rice;Canned and Jarred', 'name': 'cooked lentils', 'id': 16070, u'g': 250.0, u'grams': 250.0},
+{'aisle': 'Produce', 'name': 'courgettes', 'id': 11477, u'g': 300.0, u'grams': 300.0},
+{'aisle': 'Spices and Seasonings', 'name': 'cumin', 'id': 1002014, u'tsp': 0.5, u'grams': 1.0},
+{'aisle': 'Spices and Seasonings', u'grams': 2.7, 'id': 2042, 'name': 'dried thyme', u'tbsp': 1.0},
+{'aisle': 'Produce', 'name': 'fresh thyme', 'id': 2049, u'sprigs': 2.0, u'grams': 2.0},
+{u'': 3.0, 'aisle': 'Produce', u'grams': 9.0, 'id': 11215, 'name': 'garlic cloves'},
+{u'': 1.0, 'aisle': 'Produce', u'grams': 110.0, u'cup': 1.0, 'id': 11282, 'name': 'onion'},
+{'aisle': 'Oil, Vinegar, Salad Dressing', u'grams': 14.0, 'id': 4582, 'name': 'rapeseed oil', u'tbsp': 1.0},
+{u'': 1.0, 'aisle': 'Produce', u'grams': 119.0, 'id': 11821, 'name': 'red bell pepper'},
+{'aisle': 'Spices and Seasonings', 'name': 'smoked paprika', 'id': 1012028, u'tsp': 1.0, u'grams': 2.0},
+{'aisle': 'Canned and Jarred', u'grams': 250.0, 'id': 98845, 'name': 'vegetable stock cube', u'ml': 250.0},
+{u'': 3.0, u'teaspoons': 2.0, u'cups': 4.0, 'id': 11951, 'name': 'yellow bell pepper', 'aisle': 'Produce', u'cubes': 4.0, u'grams': 1000.0, u'pounds': 2.0, u'tablespoons': 3.0, u'teaspoon': 0.5},
+{'aisle': 'Canned and Jarred', u'cubes': 4.0, u'grams': 16.0, 'name': 'beef bouillon', 'id': 6008},
+{'aisle': 'Meat', u'pounds': 2.0, u'grams': 907.19, 'name': 'beef stew meat', 'id': 10013411},
+{'id': 20027, 'aisle': 'Baking', u'teaspoons': 2.0, 'name': 'cornstarch', u'grams': 4.0},
+{'id': 2029, 'aisle': 'Spices and Seasonings', u'teaspoon': 1.0, 'name': 'dried parsley', u'grams': 0.1},
+{'id': 2036, 'aisle': 'Produce;Spices and Seasonings', u'teaspoon': 1.0, 'name': 'dried rosemary', u'grams': 0.1},
+{'id': 1002030, 'aisle': 'Spices and Seasonings', u'teaspoon': 0.5, 'name': 'ground pepper', u'grams': 1.0},
+{u'': 3.0, 'aisle': 'Produce', u'grams': 639.0, 'name': 'potatoes', 'id': 11362},
+{'aisle': 'Oil, Vinegar, Salad Dressing', u'grams': 42.0, u'tablespoons': 3.0, u'cups': 1.25, 'id': 4513, 'name': 'vegetable oil'},
+{'aisle': 'Beverages', u'grams': 1000.0, u'teaspoons': 2.0, u'cups': 4.0, 'id': 14412, 'name': 'water'},
+{'aisle': 'Beverages', u'cups': 4.0, u'grams': 1000.0, 'name': 'water', 'id': 14412},
+{'aisle': 'Baking', u'grams': 8.0, 'id': 18371, 'name': 'baking powder', u'teaspoons': 2.0},
+{'aisle': 'Baking', u'grams': 8.0, 'id': 18372, 'name': 'baking soda', u'teaspoons': 2.0},
+{'aisle': 'Milk, Eggs, Other Dairy', u'cup': 0.5, u'grams': 113.5, 'name': 'butter', 'id': 1001},
+{'aisle': 'Baking', u'cups': 4.0, u'grams': 480.0, 'id': 19336, 'name': "confectioners' sugar"},
+{'aisle': 'Cheese', u'ounces': 8.0, 'id': 1017, 'name': 'cream cheese', u'grams': 226.8},
+{u'': 4.0, 'aisle': 'Milk, Eggs, Other Dairy', 'id': 1123, 'name': 'eggs', u'grams': 176.0},
+{'aisle': 'Baking', u'cups': 2.0, 'id': 20081, 'name': 'flour', u'grams': 250.0},
+{u'teaspoons': 2.0, 'aisle': 'Spices and Seasonings', u'grams': 4.0, 'name': 'ground cinnamon', 'id': 2010},
+{'aisle': 'Nuts;Baking', u'cup': 1.0, 'id': 12142, 'name': 'pecans', u'grams': 99.0},
+{'aisle': 'Spices and Seasonings', u'teaspoon': 0.5, u'grams': 3.0, 'name': 'salt', 'id': 2047},
+{'aisle': 'Baking', u'grams': 4.0, u'teaspoons': 2.0, u'teaspoon': 1.0, 'id': 2050, 'name': 'vanilla extract'},
+{u'teaspoons': 2.0, 'aisle': 'Baking', u'grams': 8.0, 'name': 'vanilla extract', 'id': 2050},
+{'aisle': 'Baking', u'cups': 2.0, 'id': 19335, 'name': 'white sugar', u'grams': 400.0},
+{'aisle': 'Baking', u'grams': 9.86, 'id': 18371, 'name': 'baking powder', u'teaspoons': 2.0},
+{'id': 18371, 'aisle': 'Baking', u'teaspoons': 2.0, 'name': 'baking powder', u'grams': 9.86},
+{u'teaspoons': 2.0, 'aisle': 'Baking', u'grams': 9.86, 'name': 'baking powder', 'id': 18371},
+{'aisle': 'Baking', u'grams': 9.86, 'id': 18371, 'name': 'baking powder', u'teaspoons': 2.0},
+{'aisle': 'Canned and Jarred', u'serving': 1.0, u'grams': 235.0, 'name': 'stock', 'id': 1006615},
+{u'': 2.0, 'aisle': 'Produce', u'grams': 256.0, 'name': 'artichokes', 'id': 11007},
+{u'': 1.0, 'aisle': 'Produce', u'grams': 108.0, 'name': 'lemons', 'id': 9150},
+{'aisle': 'Alcoholic Beverages', u'cups': 4.0, u'grams': 960.0, 'name': 'white wine', 'id': 14106},
+{u'': 1.0, 'aisle': 'Produce;Spices and Seasonings', u'grams': 0.1, 'name': 'bay leaf', 'id': 2004},
+{u'': 4.0, 'aisle': 'Spices and Seasonings', u'grams': 0.4, 'name': 'peppercorn', 'id': 1022030},
+{'aisle': 'Cheese', u'tbsp': 6.0, u'grams': 88.68, 'name': 'fontina cheese', 'id': 1020},
+{'aisle': 'Cheese', u'tbsp': 2.0, u'grams': 10.0, 'name': 'parmesan cheese', 'id': 1033},
+{'aisle': 'Bakery/Bread;Pasta and Rice', u'serving': 1.0, u'grams': 1.0, 'name': 'stuffing', 'id': 18082},
+{'aisle': 'Milk, Eggs, Other Dairy', u'cup': 0.25, u'grams': 56.75, 'name': 'salted butter', 'id': 1001001},
+{'aisle': 'Produce', u'grams': 0.7, 'name': 'garlic', u'tsp': 0.25, 'id': 11215},
+{'aisle': 'Produce;Spices and Seasonings', u'grams': 0.03, 'name': 'basil', u'tsp': 0.25, 'id': 2044},
 ]
-
-
 ConversionTableSize = len(ConversionTable)
-
-# {"id":6194,
-# "aisle":"Canned and Jarred",
-# "name":"chicken broth",
-# "amount":0.25,
-# "unit":"cup",
-# "unitShort":"cup",
-# "unitLong":"cups"}
-
-
-# {"name":"carrots",
-# "id":11124,
-# "aisle":"Produce",
-# "amount":200.0,
-# "unit":"g",
-# "unitShort":"g",
-# "unitLong":"grams"}
-
