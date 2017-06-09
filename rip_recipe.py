@@ -11,7 +11,7 @@
 
 
 from common import *
-
+from common_functions import *
 
 def rip_recipe() :
 
@@ -19,10 +19,16 @@ def rip_recipe() :
 	
 	global GlobalNumUsedServer
 	
+	SpoonacularFriendlyURL = RealURL
+	SpoonacularFriendlyURL = SpoonacularFriendlyURL.replace(':' , '%3A') # ':' = '%3A'
+	SpoonacularFriendlyURL = SpoonacularFriendlyURL.replace('/' , '%2F') # '/' = '%2F'
+	debug(Debug, SpoonacularFriendlyURL)
 	
+
 	# Extract Recipe from Website using API:
 	info("using server(" + str(GlobalNumUsedServer) + "): " + WordExtract)
 	GlobalNumUsedServer += 1
+	debug(Debug, SpoonacularServer + WordExtract + "forceExtraction=" + SwitchForceExtraction + "&url=" + SpoonacularFriendlyURL)
 	extract_response = unirest.get(SpoonacularServer + WordExtract +
 									"forceExtraction=" + SwitchForceExtraction +
 									"&url=" + SpoonacularFriendlyURL,
@@ -30,7 +36,7 @@ def rip_recipe() :
 		"X-Mashape-Key": MyMashapeKey
 	  }
 	)
-
+	
 	# find recipe ID:
 	recipe_id = extract_response.body["id"]
 	
@@ -112,8 +118,7 @@ def create_recipe_objects_file(extract_response, analyzedInstructions_response) 
 
 
 
-
-
+Debug, UrlNum, RealURL, Scale, TargetUnit, ConvertUnitServer = parseArgs()
 extract_response, analyzedInstructions_response = rip_recipe()
 create_recipe_objects_file(extract_response, analyzedInstructions_response)
 

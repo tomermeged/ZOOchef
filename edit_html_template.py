@@ -14,6 +14,7 @@
 from common import *
 from recipe_objects import *
 from ingredients_DB import *
+from common_functions import *
 
 # def add_to_ing_db(ingredientName, ConvertContainersResponseBody):
 
@@ -33,9 +34,7 @@ def convert_containers(indx) :
 	ingredientName = ingredients[indx]["name"]
 	sourceAmount = ingredients[indx]["amount"]
 	sourceUnit = ingredients[indx]["unit"]
-	debug(ingredientName)
-	debug(sourceUnit)
-	debug(TargetUnit)
+	debug(Debug, "{" + ingredientName + ",\t" + sourceUnit + ",\t" + TargetUnit + "}")
 	ConversionTableIndx = 0
 	TargetUnitExist = False
 	SourceUnitExist = False
@@ -68,7 +67,7 @@ def convert_containers(indx) :
 			"Accept": "application/json"
 		  }
 		)
-		debug(ConvertContainersResponse.body)
+		debug(Debug, ConvertContainersResponse.body)
 		if ConversionTableIndx < ConversionTableSize - 1:
 			debug("ingredient exist")
 			if TargetUnitExist == True:
@@ -80,7 +79,7 @@ def convert_containers(indx) :
 				if SourceUnitExist == False:
 					debug("source unit is missing --> add entry to dictionary")
 					ConversionTable[ConversionTableIndx][ConvertContainersResponse.body["sourceUnit"]] = ConvertContainersResponse.body["sourceAmount"]
-			debug(ConversionTable[ConversionTableIndx])
+			debug(Debug, ConversionTable[ConversionTableIndx])
 		else:
 			debug("create new dictionary for ingredient --> add both source and target")
 			ConvIng = {"name":ingredients[indx]["name"]}
@@ -106,12 +105,10 @@ def convert_containers(indx) :
 
 def edit_html_template() :
 
-	global steps
 	# files & paths:
-	html_template_filename = "html_template\zoo_cheff_templateDraft.htm"
+	f_html_template = file(ProjectPath + FilenameHTMLtemplate, 'r')
+	
 	new_html_recipe_filename = attributes[1]["title"] + "_" + str(attributes[1]["id"]) + ".htm"
-
-	f_html_template = file(ProjectPath + html_template_filename, 'r')
 	f_new_html_recipe = file(ProjectPath + new_html_recipe_filename, 'w')
 
 	new_recipe_data = f_html_template.read()
@@ -120,20 +117,28 @@ def edit_html_template() :
 	new_recipe_data = new_recipe_data.replace("sourceURL", str(attributes[0]["sourceUrl"]))
 
 	num_ingredients = len(ingredients)
-
+	debug(Debug, "num_ingredients: " + str(num_ingredients))
+	debug(Debug, "ConvertUnitServer: " + str(ConvertUnitServer))
+	debug(Debug, "scale: " + str(Scale))
 	for indx in range(0, num_ingredients):
 		if ConvertUnitServer == 1:
+			debug(Debug, "using server to convert")
 			Amount = convert_containers(indx)
 			Unit = TargetUnit
 		else:
+			debug(Debug, "not using server to convert")
 			Amount = ingredients[indx]["amount"]
 			Unit = ingredients[indx]["unit"]
-		if Scale != 1 or ConvertUnitServer == 1:
-			new_recipe_data = new_recipe_data.replace("AMOUNT#", str(Amount * Scale) + " ")
+		if (int(Scale) == 1) and (int(ConvertUnitServer) == 0):
+			debug(Debug, "using original string")
+			new_recipe_data = new_recipe_data.replace("AMOUNT#UNIT#INGREDIENT#", str(ingredients[indx]["originalString"]) + "\n<p>AMOUNT#UNIT#INGREDIENT#</p>")
+		elif (int(Scale) != 1) or (int(ConvertUnitServer) == 1):
+			debug(Debug, "scale = " + str(Scale) + " server = " + str(ConvertUnitServer))
+			new_recipe_data = new_recipe_data.replace("AMOUNT#", str(Amount * int(Scale)) + " ")
 			new_recipe_data = new_recipe_data.replace("UNIT#", Unit + " ")
 			new_recipe_data = new_recipe_data.replace("INGREDIENT#", str(ingredients[indx]["name"]) + " (orig: " + str(ingredients[indx]["originalString"]) + ")" + "\n<p>AMOUNT#UNIT#INGREDIENT#</p>")
 		else:
-			new_recipe_data = new_recipe_data.replace("AMOUNT#UNIT#INGREDIENT#", str(ingredients[indx]["originalString"]) + "\n<p>AMOUNT#UNIT#INGREDIENT#</p>")
+			error("unknown settings")
 	new_recipe_data = new_recipe_data.replace("<p>AMOUNT#UNIT#INGREDIENT#</p>", "")
 
 	num_steps = len(steps)
@@ -152,6 +157,8 @@ def edit_html_template() :
 #######################################################################
 #######################################################################
 
+
+Debug, UrlNum, RealURL, Scale, TargetUnit, ConvertUnitServer = parseArgs()
 edit_html_template()
 
 
