@@ -5,8 +5,16 @@
 # E:\tomermeg\Dropbox\projects\ZOOchef\src
 # example: python.exe main.py --URL 0 -s 3 -c grams
 
+# subprocess.call(args, *, stdin=None, stdout=None, stderr=None, shell=False)
+
 from common import *
 from common_functions import *
+import platform
+
+
+info("using python " + platform.python_version())
+
+
 
 Debug, UrlNum, RealURL, Scale, TargetUnit, ConvertUnitServer = parseArgs()
 
@@ -18,37 +26,23 @@ if int(UrlNum) != -1:
 
 
 
-FilenameRecipeObjectsUnique = RealURL
-FilenameRecipeObjectsUnique = FilenameRecipeObjectsUnique.replace('https://', '')
-FilenameRecipeObjectsUnique = FilenameRecipeObjectsUnique.replace('http://', '')
-FilenameRecipeObjectsUnique = FilenameRecipeObjectsUnique.replace('www.', '')
-FilenameRecipeObjectsUnique = FilenameRecipeObjectsUnique.replace('<', '.')	# < (less than)
-FilenameRecipeObjectsUnique = FilenameRecipeObjectsUnique.replace('>', '.')	# > (greater than)
-FilenameRecipeObjectsUnique = FilenameRecipeObjectsUnique.replace(':', '.')	# : (colon)
-FilenameRecipeObjectsUnique = FilenameRecipeObjectsUnique.replace('"', '.')	# " (double quote)
-FilenameRecipeObjectsUnique = FilenameRecipeObjectsUnique.replace('/', '.')	# / (forward slash)
-FilenameRecipeObjectsUnique = FilenameRecipeObjectsUnique.replace('\\', '.')	# \ (backslash)
-FilenameRecipeObjectsUnique = FilenameRecipeObjectsUnique.replace('|', '.')	# | (vertical bar or pipe)
-FilenameRecipeObjectsUnique = FilenameRecipeObjectsUnique.replace('?', '.')	# ? (question mark)
-FilenameRecipeObjectsUnique = FilenameRecipeObjectsUnique.replace('*', '.')	# * (asterisk)
+FilenameRecipeObjectsUnique = url_to_filename(RealURL)
 FilenameRecipeObjectsUnique = str(FilenameRecipeObjectsUnique + ".py")
 
-
+run_cmd_devNull("if not exist " + ProjectPath + ParsedRecipesDBdir  + " mkdir " + ProjectPath + ParsedRecipesDBdir)
+run_cmd_devNull("if not exist " + ProjectPath + HTMLdir  + " mkdir " + ProjectPath + HTMLdir)
+run_cmd_devNull("if not exist " + ProjectPath + Debugdir  + " mkdir " + ProjectPath + Debugdir)
 
 # checks if was already parsed:
-FindObjectsFile = str(find(FilenameRecipeObjectsUnique, ProjectPath + WordParsedRecipesDB))
+FindObjectsFile = str(find(FilenameRecipeObjectsUnique, ProjectPath + ParsedRecipesDBdir))
 if FindObjectsFile == WordNone or ForceUseServerExtract == 1:
-	os.system("python.exe rip_recipe.py" + " --debug " + str(Debug) + " --URL " + RealURL) # have to seperate programs - the recipe_object.py is live
-	os.system("mkdir " + ProjectPath + WordParsedRecipesDB)
-	os.system("copy recipe_objects.py " + ProjectPath + WordParsedRecipesDB + "\\" + FilenameRecipeObjectsUnique)
+	run_cmd("python.exe rip_recipe.py" + " --debug " + str(Debug) + " --URL " + RealURL)
+	run_cmd_devNull("copy recipe_objects.py " + ProjectPath + ParsedRecipesDBdir + "\\" + FilenameRecipeObjectsUnique)
 else:
-	info("copy " + FindObjectsFile + " " + ProjectPath + FilenameRecipeObjects)
-	os.system("copy " + FindObjectsFile + " " + ProjectPath + FilenameRecipeObjects)
+	debug(Debug, "copy " + FindObjectsFile + " " + ProjectPath + FilenameRecipeObjects)
+	run_cmd_devNull("copy " + FindObjectsFile + " " + ProjectPath + FilenameRecipeObjects)
 
-
-os.system("python.exe edit_html_template.py" + " --debug " + str(Debug) + " --scale " + str(Scale) + " --convert " + TargetUnit)
-
-
+run_cmd("python.exe edit_html_template.py" + " --debug " + str(Debug) + " --scale " + str(Scale) + " --convert " + TargetUnit)
 
 
 

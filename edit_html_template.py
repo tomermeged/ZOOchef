@@ -40,7 +40,7 @@ def convert_containers(indx) :
 	SourceUnitExist = False
 
 	# checking if all necessary conversion data exist in DB
-	for ConversionTableIndx in range(0, ConversionTableSize):
+	for ConversionTableIndx in xrange(0, ConversionTableSize):
 		if ConversionTable[ConversionTableIndx]["name"] == ingredientName:
 			if sourceUnit in ConversionTable[ConversionTableIndx]:
 				SourceUnitExist = True
@@ -69,19 +69,19 @@ def convert_containers(indx) :
 		)
 		debug(Debug, ConvertContainersResponse.body)
 		if ConversionTableIndx < ConversionTableSize - 1:
-			debug("ingredient exist")
+			debug(Debug, "ingredient exist")
 			if TargetUnitExist == True:
-				debug("only source unit is missing")
+				debug(Debug, "only source unit is missing")
 				ConversionTable[ConversionTableIndx][ConvertContainersResponse.body["sourceUnit"]] = ConvertContainersResponse.body["sourceAmount"]
 			else:
-				debug("target unit is missing --> add entry to dictionary")
+				debug(Debug, "target unit is missing --> add entry to dictionary")
 				ConversionTable[ConversionTableIndx][ConvertContainersResponse.body["targetUnit"]] = ConvertContainersResponse.body["targetAmount"]
 				if SourceUnitExist == False:
-					debug("source unit is missing --> add entry to dictionary")
+					debug(Debug, "source unit is missing --> add entry to dictionary")
 					ConversionTable[ConversionTableIndx][ConvertContainersResponse.body["sourceUnit"]] = ConvertContainersResponse.body["sourceAmount"]
 			debug(Debug, ConversionTable[ConversionTableIndx])
 		else:
-			debug("create new dictionary for ingredient --> add both source and target")
+			debug(Debug, "create new dictionary for ingredient --> add both source and target")
 			ConvIng = {"name":ingredients[indx]["name"]}
 			ConvIng["id"] = ingredients[indx]["id"]
 			ConvIng["aisle"] = ingredients[indx]["aisle"]
@@ -108,19 +108,18 @@ def edit_html_template() :
 	# files & paths:
 	f_html_template = file(ProjectPath + FilenameHTMLtemplate, 'r')
 	
-	new_html_recipe_filename = attributes[1]["title"] + "_" + str(attributes[1]["id"]) + ".htm"
-	f_new_html_recipe = file(ProjectPath + new_html_recipe_filename, 'w')
-
 	new_recipe_data = f_html_template.read()
-
 	new_recipe_data = new_recipe_data.replace("recipeName", str(attributes[1]["title"]))
 	new_recipe_data = new_recipe_data.replace("sourceURL", str(attributes[0]["sourceUrl"]))
 
 	num_ingredients = len(ingredients)
+	info("adding ingredients to recipe")
 	debug(Debug, "num_ingredients: " + str(num_ingredients))
 	debug(Debug, "ConvertUnitServer: " + str(ConvertUnitServer))
 	debug(Debug, "scale: " + str(Scale))
 	for indx in range(0, num_ingredients):
+		debug(Debug, "--")
+		debug(Debug, str(ingredients[indx]["name"]))
 		if ConvertUnitServer == 1:
 			debug(Debug, "using server to convert")
 			Amount = convert_containers(indx)
@@ -142,15 +141,19 @@ def edit_html_template() :
 	new_recipe_data = new_recipe_data.replace("<p>AMOUNT#UNIT#INGREDIENT#</p>", "")
 
 	num_steps = len(steps)
+	info("adding steps to recipe")
 	for indx in range(0, num_steps):
 		new_recipe_data = new_recipe_data.replace("STEP#", str(steps[indx]["number"]) + ". " + str(steps[indx]["step"]) + "\n<p>STEP#</p>")
 	new_recipe_data = new_recipe_data.replace("<p>STEP#</p>", "")
 
 
-
+	new_html_recipe_filename = attributes[1]["title"] + "_" + str(attributes[1]["id"]) + ".htm"
+	f_new_html_recipe = file(ProjectPath + HTMLdir + "\\" + new_html_recipe_filename, 'w')
+	info("writing new recipe to page \'" + HTMLdir + "\\" + new_html_recipe_filename + "\'")
 	f_new_html_recipe.write(new_recipe_data)
 	f_new_html_recipe.close()
 	f_new_html_recipe = file(ProjectPath + FilenameCurrentHTMLRecipe, 'w')
+	info("writing new recipe to page \'" + FilenameCurrentHTMLRecipe + "\'")
 	f_new_html_recipe.write(new_recipe_data)
 
 

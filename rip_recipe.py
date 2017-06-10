@@ -28,7 +28,7 @@ def rip_recipe() :
 	# Extract Recipe from Website using API:
 	info("using server(" + str(GlobalNumUsedServer) + "): " + WordExtract)
 	GlobalNumUsedServer += 1
-	debug(Debug, SpoonacularServer + WordExtract + "forceExtraction=" + SwitchForceExtraction + "&url=" + SpoonacularFriendlyURL)
+	debug(Debug, "unirest.get with: " + SpoonacularServer + WordExtract + "forceExtraction=" + SwitchForceExtraction + "&url=" + SpoonacularFriendlyURL)
 	extract_response = unirest.get(SpoonacularServer + WordExtract +
 									"forceExtraction=" + SwitchForceExtraction +
 									"&url=" + SpoonacularFriendlyURL,
@@ -36,6 +36,16 @@ def rip_recipe() :
 		"X-Mashape-Key": MyMashapeKey
 	  }
 	)
+	# write the raw output to file
+	f_raw_extract_output = file(ProjectPath + FilenameRawExtractOutput, 'w') # open file for write
+	responseToFile = extract_response.raw_body
+	responseToFile = responseToFile.replace(',"sourceUrl":','\n,"sourceUrl":')
+	responseToFile = responseToFile.replace('},','},\n')
+	responseToFile = responseToFile.replace('"extendedIngredients":[','"\nextendedIngredients":[\n')
+	responseToFile = responseToFile.replace('],','],\n')
+	f_raw_extract_output.write(responseToFile) # write raw data to file
+	f_raw_extract_output.close() # close file
+	
 	
 	# find recipe ID:
 	recipe_id = extract_response.body["id"]
@@ -51,23 +61,21 @@ def rip_recipe() :
 		"Accept": "application/json"
 	  }
 	)
+	# write the raw output to file
+	f_raw_analyzedInstructions_output = file(ProjectPath + FilenameRawAnalyzedInstructionsOutput, 'w') # open file for write
+	responseToFile = analyzedInstructions_response.raw_body
+	responseToFile = responseToFile.replace('},','},\n')
+	f_raw_analyzedInstructions_output.write(responseToFile) # write raw data to file
+	f_raw_analyzedInstructions_output.close() # close file
 	
 	return extract_response, analyzedInstructions_response
 
 def create_recipe_objects_file(extract_response, analyzedInstructions_response) :
-	# write the raw output to file
-	f_raw_extract_output = file(ProjectPath + FilenameRawExtractOutput, 'w') # open file for write
-	f_raw_extract_output.write(extract_response.raw_body) # write raw data to file
-	attributes_data = instructions_data = ingredients_dict_data = extract_response.raw_body # direct the raw extract_response to a new object for reordering
 
-	f_raw_analyzedInstructions_output = file(ProjectPath + FilenameRawAnalyzedInstructionsOutput, 'w') # open file for write
-	f_raw_analyzedInstructions_output.write(analyzedInstructions_response.raw_body) # write raw data to file
-	analyzedInstructions_data = analyzedInstructions_response.raw_body # direct the raw analyzedInstructions_response (from file) to a new objecj
-
-
-	f_raw_extract_output.close() # close file
-	f_raw_analyzedInstructions_output.close() # close file
-
+	attributes_data = instructions_data = ingredients_dict_data = extract_response.raw_body.replace('null', 'None') # direct the raw extract_response to a new object for reordering
+	analyzedInstructions_data = analyzedInstructions_response.raw_body.replace('null', 'None') # direct the raw analyzedInstructions_response (from file) to a new object
+	
+	
 	# ****************************************************************************************************************************************
 	# **************create ingredient dictionary in src file recipe_objects.py ***************************************************************
 
@@ -89,22 +97,31 @@ def create_recipe_objects_file(extract_response, analyzedInstructions_response) 
 
 
 	# create ingredient dictionary:
-	remove = re.search('{"(.+?)\[', ingredients_dict_data) # get substring between '<phrase>(.+?)<prase>'
-	ingredients_dict_data = ingredients_dict_data.replace('{"' + remove.group(1) + '[', "ingredients = [")
+	if extract_response.body["extendedIngredients"] != None:
+		remove = re.search('{"(.+?)\[', ingredients_dict_data) # get substring between '<phrase>(.+?)<prase>'
+		debug(Debug, remove.group(1))
+		ingredients_dict_data = ingredients_dict_data.replace('{"' + remove.group(1) + '[', "ingredients = [")
 
-	remove = re.search('}],(.+?)div>"}', ingredients_dict_data) # get substring between '<phrase>(.+?)<prase>'
-	ingredients_dict_data = ingredients_dict_data.replace('}],' + remove.group(1) + 'div>"}', "}\n]\n")
+	# if extract_response.body.extendedIngredients != None:
+	remove = re.search('}],(.+?)}', ingredients_dict_data) # get substring between '<phrase>(.+?)<prase>'
+
+	ingredients_dict_data = ingredients_dict_data.replace('}],' + remove.group(1) + '}', "}\n]\n")
 
 	ingredients_dict_data = ingredients_dict_data.replace("{","\n{")
 
 	# create instructions string:
-	keep = re.search('"text":"(.+?)","instructions"', instructions_data)
-	instructions_data = 'instructions = "' + keep.group(1) + '"\n'
-
-	analyzedInstructions_data = analyzedInstructions_data.replace('[{"name":"","steps":[', 'steps = [\n')
-	analyzedInstructions_data = analyzedInstructions_data.replace('},{"number":', '},\n{"number":')
-	analyzedInstructions_data = analyzedInstructions_data.replace('null', 'None')
-	analyzedInstructions_data = analyzedInstructions_data.replace('}]}]', '}]')
+	keep = extract_response.body["text"]
+	if keep != None:
+		# instructions_data = 'instructions = "' + keep.group(1) + '"\n'
+		instructions_data = 'instructions = "' + keep + '"\n'
+		analyzedInstructions_data = analyzedInstructions_data.replace('[{"name":"","steps":[', 'steps = [\n')
+		analyzedInstructions_data = analyzedInstructions_data.replace('},{"number":', '},\n{"number":')
+		analyzedInstructions_data = analyzedInstructions_data.replace('}]}]', '}]')
+	else:
+		prompt("no instructions found on page, please enter manually...")
+		Instructions_from_user = raw_input("")
+		instructions_data = "instructions = \"" + Instructions_from_user + "\"" + "\n"
+		analyzedInstructions_data = "steps = [\n{\"number\":1,\"step\":\"" + Instructions_from_user + "\"}]"
 
 	# creating new py source "recipe_objects.py"
 	f_recipe_objects = file(ProjectPath + FilenameRecipeObjects, 'w') # open file for write

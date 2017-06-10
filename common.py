@@ -5,10 +5,9 @@ import unirest
 import ast
 import re
 import os
-
+import subprocess
 
 # words:
-WordParsedRecipesDB = "ParsedRecipesDB"
 WordNone = "None"
 WordExtract = "extract?"
 WordAnalyzedInstructions = "analyzedInstructions?"
@@ -18,13 +17,18 @@ WordConvert = "convert?"
 SwitchForceExtraction = "false" # have no idea what this is doing
 SwitchStepBreakdown = "true"
 
+# directories:
+HTMLdir = "html"
+Debugdir = "debug"
+ParsedRecipesDBdir = "ParsedRecipesDB"
+
 # filenames:
 FilenameRecipeObjects = "recipe_objects.py"
 FilenameIngredientsDB = "Ingredients_DB.py"
-FilenameRawExtractOutput = "raw_extract_output.txt"
-FilenameRawAnalyzedInstructionsOutput = "raw_analyzedInstructions_output.txt"
+FilenameRawExtractOutput = Debugdir + "\\raw_extract_output.txt"
+FilenameRawAnalyzedInstructionsOutput = Debugdir + "\\raw_analyzedInstructions_output.txt"
 FilenameCurrentHTMLRecipe = "latest.htm"
-FilenameHTMLtemplate = "html_template\zoo_cheff_templateDraft.htm"
+FilenameHTMLtemplate = HTMLdir + "\\zoo_cheff_templateDraft.htm"
 
 
 # Global vars:

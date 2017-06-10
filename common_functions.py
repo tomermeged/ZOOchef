@@ -3,6 +3,7 @@
 import getopt
 import sys
 import os
+import subprocess
 
 Debug = 0
 UrlNum = -1
@@ -33,13 +34,68 @@ global info
 def info(string):
 	print("INFO: " + str(string))
 
+	
+###############################################
+##### info (log) func #########################
+global prompt
+def prompt(string):
+	print("PROMPT: " + str(string))
+
 
 ###############################################
 ##### debug (log) func ########################
 global debug
 def debug(Debug, string):
 	if int(Debug) == 1:
-		print("DEBUG: " + str(string))
+		if len(string) > 100:
+			print("****")
+			print("DEBUG: " + str(string))
+			print("****")
+		else:
+			print("DEBUG: " + str(string))
+
+
+###############################################
+##### run_cmd func ########################
+global run_cmd
+def run_cmd(cmd): 	
+	retval = subprocess.call(cmd, shell=True)
+	if  retval != 0:
+		error(cmd + "\nreturned with error (" + str(retval) + ")")
+
+		
+
+###############################################
+##### run_cmd func ########################
+global run_cmd_devNull
+def run_cmd_devNull(cmd):
+	# dev/null file
+	FNULL = open(os.devnull, 'w')
+	retval = subprocess.call(cmd, stdout=FNULL, shell=True)
+	FNULL.close()
+	if  retval != 0:
+		error(cmd + "returned with error (" + str(retval) + ")")
+
+		
+
+###############################################
+##### url_to_filename func ########################
+global url_to_filename
+def url_to_filename(url):
+	filename = url
+	filename = filename.replace('https://', '')
+	filename = filename.replace('http://', '')
+	filename = filename.replace('www.', '')
+	filename = filename.replace('<', '.')	# < (less than)
+	filename = filename.replace('>', '.')	# > (greater than)
+	filename = filename.replace(':', '.')	# : (colon)
+	filename = filename.replace('"', '.')	# " (double quote)
+	filename = filename.replace('/', '.')	# / (forward slash)
+	filename = filename.replace('\\', '.')	# \ (backslash)
+	filename = filename.replace('|', '.')	# | (vertical bar or pipe)
+	filename = filename.replace('?', '.')	# ? (question mark)
+	filename = filename.replace('*', '.')	# * (asterisk)
+	return filename
 
 
 ###############################################
