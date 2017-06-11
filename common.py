@@ -6,6 +6,10 @@ import ast
 import re
 import os
 import subprocess
+import sys
+
+reload(sys) 
+sys.setdefaultencoding('utf8')
 
 # words:
 WordNone = "None"

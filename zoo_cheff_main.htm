@@ -1,0 +1,108 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Zoo-cheff: recipeName</title>
+<!--[if lt IE 9]>
+<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+<style>
+aside, article, section, header, footer, nav {
+	display: block;
+}
+html, body, h1, h2, h3, p {
+	margin: 0;
+	padding: 0;
+}
+html {
+	background: gray;
+}
+body {
+	font-family: Arial;
+	font-size: 100%;
+	width: 600px;
+	background: white;
+	margin: 0 auto;
+}
+article {
+	padding: 0 25px;
+}
+aside {
+	width: 300px;
+	border: 1px solid #000;
+	margin-bottom: 20px;
+	font-size: 85%;
+}
+h1 {
+	font-family: Georgia;
+	font-size: 1.8em;
+	font-weight: normal;
+	margin-bottom: 1em;
+}
+h2 {
+	font-family: Georgia;
+	font-size: 1.4em;
+	font-weight: normal;
+	margin-bottom: 1em;
+}
+p {
+	font-size: 1em;
+	margin-bottom: 1em;
+	line-height: 1.6;
+}
+footer {
+	background: #42403E;
+	padding: 10px 0;
+	color: white;
+	text-align: center;
+}
+/*add styles here*/
+header h1 {
+	background: #42403E;
+	text-align: center;
+	line-height: 75px;
+	color: white;
+}
+article h2 {
+	color: #7D6855;
+}
+.upcoming h2 {
+	background: #7D6855;
+	padding: 5px 0;
+	text-align: center;
+	color: white;
+}
+.specials h2 {
+	background: #D1956D;
+	padding: 5px 0;
+	text-align: center;
+	color: white;
+}
+aside p {
+	line-height: 1.2;
+	margin: 0 15px 1em;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>Zoo-cheff</h1>
+</header>
+<article>
+<br>
+<br>
+
+<form action="http://localhost:8000/mainCGI.py" method="get">
+URL: <input type="text" name="URL">  <br />
+Scale: <input type="text" name="Scale" />  <br />
+convert to unit: <input type="text" name="unit" />
+<input type="submit" value="Submit" />
+</form>
+
+
+</article>
+<footer>
+<p>copyright and legal disclaimer</p>
+</body>
+</html>
+

@@ -15,20 +15,20 @@ from common_functions import *
 
 def rip_recipe() :
 
-	info("parsing: " + RealURL)
+	info("parsing: " + param.RealURL)
 	
 	global GlobalNumUsedServer
 	
-	SpoonacularFriendlyURL = RealURL
+	SpoonacularFriendlyURL = param.RealURL
 	SpoonacularFriendlyURL = SpoonacularFriendlyURL.replace(':' , '%3A') # ':' = '%3A'
 	SpoonacularFriendlyURL = SpoonacularFriendlyURL.replace('/' , '%2F') # '/' = '%2F'
-	debug(Debug, SpoonacularFriendlyURL)
+	debug(param.Debug, SpoonacularFriendlyURL)
 	
 
 	# Extract Recipe from Website using API:
 	info("using server(" + str(GlobalNumUsedServer) + "): " + WordExtract)
 	GlobalNumUsedServer += 1
-	debug(Debug, "unirest.get with: " + SpoonacularServer + WordExtract + "forceExtraction=" + SwitchForceExtraction + "&url=" + SpoonacularFriendlyURL)
+	debug(param.Debug, "unirest.get with: " + SpoonacularServer + WordExtract + "forceExtraction=" + SwitchForceExtraction + "&url=" + SpoonacularFriendlyURL)
 	extract_response = unirest.get(SpoonacularServer + WordExtract +
 									"forceExtraction=" + SwitchForceExtraction +
 									"&url=" + SpoonacularFriendlyURL,
@@ -75,12 +75,8 @@ def create_recipe_objects_file(extract_response, analyzedInstructions_response) 
 	attributes_data = instructions_data = ingredients_dict_data = extract_response.raw_body.replace('null', 'None') # direct the raw extract_response to a new object for reordering
 	analyzedInstructions_data = analyzedInstructions_response.raw_body.replace('null', 'None') # direct the raw analyzedInstructions_response (from file) to a new object
 	
-	
-	# ****************************************************************************************************************************************
-	# **************create ingredient dictionary in src file recipe_objects.py ***************************************************************
-
 	# prepare comments:
-	head_comment = "# coding: utf-8\n\n# these ingredients are based on a recipe from:\n# " + RealURL # push comment in the start of buffer
+	head_comment = "# coding: utf-8\n\n# these ingredients are based on a recipe from:\n# " + param.RealURL # push comment in the start of buffer
 	ingredients_dict_comment = "\n\n# a list of all ingrediednts:\n" # push comment in the start of buffer
 	instructions_comment = "\n\n# recipe instructions:\n"
 	attributes_comment = "\n\n# recipe attributes:\n"
@@ -99,20 +95,18 @@ def create_recipe_objects_file(extract_response, analyzedInstructions_response) 
 	# create ingredient dictionary:
 	if extract_response.body["extendedIngredients"] != None:
 		remove = re.search('{"(.+?)\[', ingredients_dict_data) # get substring between '<phrase>(.+?)<prase>'
-		debug(Debug, remove.group(1))
+		debug(param.Debug, remove.group(1))
 		ingredients_dict_data = ingredients_dict_data.replace('{"' + remove.group(1) + '[', "ingredients = [")
 
-	# if extract_response.body.extendedIngredients != None:
 	remove = re.search('}],(.+?)}', ingredients_dict_data) # get substring between '<phrase>(.+?)<prase>'
-
 	ingredients_dict_data = ingredients_dict_data.replace('}],' + remove.group(1) + '}', "}\n]\n")
 
 	ingredients_dict_data = ingredients_dict_data.replace("{","\n{")
 
 	# create instructions string:
 	keep = extract_response.body["text"]
+	keep = keep.replace("\n", "\n\\")
 	if keep != None:
-		# instructions_data = 'instructions = "' + keep.group(1) + '"\n'
 		instructions_data = 'instructions = "' + keep + '"\n'
 		analyzedInstructions_data = analyzedInstructions_data.replace('[{"name":"","steps":[', 'steps = [\n')
 		analyzedInstructions_data = analyzedInstructions_data.replace('},{"number":', '},\n{"number":')
@@ -135,7 +129,8 @@ def create_recipe_objects_file(extract_response, analyzedInstructions_response) 
 
 
 
-Debug, UrlNum, RealURL, Scale, TargetUnit, ConvertUnitServer = parseArgs()
+# Debug, UrlNum, RealURL, Scale, TargetUnit, ConvertUnitServer = parseArgs()
+param = parseArgs()
 extract_response, analyzedInstructions_response = rip_recipe()
 create_recipe_objects_file(extract_response, analyzedInstructions_response)
 

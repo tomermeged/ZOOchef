@@ -16,17 +16,10 @@ from recipe_objects import *
 from ingredients_DB import *
 from common_functions import *
 
-# def add_to_ing_db(ingredientName, ConvertContainersResponseBody):
-
-	# f_IngredientsDB = file(ProjectPath + FilenameIngredientsDB, 'w')
-	# f_IngredientsDB.close()
-
-
-
 def get_conversion_from_db(sourceUnit, sourceAmount, ConversionTableIndx):
 	DBsourceAmount = ConversionTable[ConversionTableIndx][sourceUnit]
 	NormFactor = DBsourceAmount / sourceAmount
-	DBTargetAmount = ConversionTable[ConversionTableIndx][TargetUnit]
+	DBTargetAmount = ConversionTable[ConversionTableIndx][param.TargetUnit]
 
 	return DBTargetAmount * NormFactor
 
@@ -34,7 +27,7 @@ def convert_containers(indx) :
 	ingredientName = ingredients[indx]["name"]
 	sourceAmount = ingredients[indx]["amount"]
 	sourceUnit = ingredients[indx]["unit"]
-	debug(Debug, "{" + ingredientName + ",\t" + sourceUnit + ",\t" + TargetUnit + "}")
+	debug(param.Debug, "{" + ingredientName + ",\t" + sourceUnit + ",\t" + param.TargetUnit + "}")
 	ConversionTableIndx = 0
 	TargetUnitExist = False
 	SourceUnitExist = False
@@ -44,7 +37,7 @@ def convert_containers(indx) :
 		if ConversionTable[ConversionTableIndx]["name"] == ingredientName:
 			if sourceUnit in ConversionTable[ConversionTableIndx]:
 				SourceUnitExist = True
-			if TargetUnit in ConversionTable[ConversionTableIndx]:
+			if param.TargetUnit in ConversionTable[ConversionTableIndx]:
 				TargetUnitExist = True
 			break
 
@@ -61,27 +54,27 @@ def convert_containers(indx) :
 													"ingredientName=" + ingredientName +
 													"&sourceAmount=" + str(sourceAmount) +
 													"&sourceUnit=" + sourceUnit +
-													"&targetUnit=" + TargetUnit,
+													"&targetUnit=" + param.TargetUnit,
 		  headers={
 			"X-Mashape-Key": MyMashapeKey,
 			"Accept": "application/json"
 		  }
 		)
-		debug(Debug, ConvertContainersResponse.body)
+		debug(param.Debug, ConvertContainersResponse.body)
 		if ConversionTableIndx < ConversionTableSize - 1:
-			debug(Debug, "ingredient exist")
+			debug(param.Debug, "ingredient exist")
 			if TargetUnitExist == True:
-				debug(Debug, "only source unit is missing")
+				debug(param.Debug, "only source unit is missing")
 				ConversionTable[ConversionTableIndx][ConvertContainersResponse.body["sourceUnit"]] = ConvertContainersResponse.body["sourceAmount"]
 			else:
-				debug(Debug, "target unit is missing --> add entry to dictionary")
+				debug(param.Debug, "target unit is missing --> add entry to dictionary")
 				ConversionTable[ConversionTableIndx][ConvertContainersResponse.body["targetUnit"]] = ConvertContainersResponse.body["targetAmount"]
 				if SourceUnitExist == False:
-					debug(Debug, "source unit is missing --> add entry to dictionary")
+					debug(param.Debug, "source unit is missing --> add entry to dictionary")
 					ConversionTable[ConversionTableIndx][ConvertContainersResponse.body["sourceUnit"]] = ConvertContainersResponse.body["sourceAmount"]
-			debug(Debug, ConversionTable[ConversionTableIndx])
+			debug(param.Debug, ConversionTable[ConversionTableIndx])
 		else:
-			debug(Debug, "create new dictionary for ingredient --> add both source and target")
+			debug(param.Debug, "create new dictionary for ingredient --> add both source and target")
 			ConvIng = {"name":ingredients[indx]["name"]}
 			ConvIng["id"] = ingredients[indx]["id"]
 			ConvIng["aisle"] = ingredients[indx]["aisle"]
@@ -114,26 +107,26 @@ def edit_html_template() :
 
 	num_ingredients = len(ingredients)
 	info("adding ingredients to recipe")
-	debug(Debug, "num_ingredients: " + str(num_ingredients))
-	debug(Debug, "ConvertUnitServer: " + str(ConvertUnitServer))
-	debug(Debug, "scale: " + str(Scale))
+	debug(param.Debug, "num_ingredients: " + str(num_ingredients))
+	debug(param.Debug, "ConvertUnitServer: " + str(param.ConvertUnitServer))
+	debug(param.Debug, "scale: " + str(param.Scale))
 	for indx in range(0, num_ingredients):
-		debug(Debug, "--")
-		debug(Debug, str(ingredients[indx]["name"]))
-		if ConvertUnitServer == 1:
-			debug(Debug, "using server to convert")
+		debug(param.Debug, "--")
+		debug(param.Debug, str(ingredients[indx]["name"]))
+		if param.ConvertUnitServer == 1:
+			debug(param.Debug, "using server to convert")
 			Amount = convert_containers(indx)
-			Unit = TargetUnit
+			Unit = param.TargetUnit
 		else:
-			debug(Debug, "not using server to convert")
+			debug(param.Debug, "not using server to convert")
 			Amount = ingredients[indx]["amount"]
 			Unit = ingredients[indx]["unit"]
-		if (int(Scale) == 1) and (int(ConvertUnitServer) == 0):
-			debug(Debug, "using original string")
+		if (int(param.Scale) == 1) and (int(param.ConvertUnitServer) == 0):
+			debug(param.Debug, "using original string")
 			new_recipe_data = new_recipe_data.replace("AMOUNT#UNIT#INGREDIENT#", str(ingredients[indx]["originalString"]) + "\n<p>AMOUNT#UNIT#INGREDIENT#</p>")
-		elif (int(Scale) != 1) or (int(ConvertUnitServer) == 1):
-			debug(Debug, "scale = " + str(Scale) + " server = " + str(ConvertUnitServer))
-			new_recipe_data = new_recipe_data.replace("AMOUNT#", str(Amount * int(Scale)) + " ")
+		elif (int(param.Scale) != 1) or (int(param.ConvertUnitServer) == 1):
+			debug(param.Debug, "scale = " + str(param.Scale) + " server = " + str(param.ConvertUnitServer))
+			new_recipe_data = new_recipe_data.replace("AMOUNT#", str(Amount * int(param.Scale)) + " ")
 			new_recipe_data = new_recipe_data.replace("UNIT#", Unit + " ")
 			new_recipe_data = new_recipe_data.replace("INGREDIENT#", str(ingredients[indx]["name"]) + " (orig: " + str(ingredients[indx]["originalString"]) + ")" + "\n<p>AMOUNT#UNIT#INGREDIENT#</p>")
 		else:
@@ -161,7 +154,8 @@ def edit_html_template() :
 #######################################################################
 
 
-Debug, UrlNum, RealURL, Scale, TargetUnit, ConvertUnitServer = parseArgs()
+# Debug, UrlNum, RealURL, Scale, TargetUnit, ConvertUnitServer = parseArgs()
+param = parseArgs()
 edit_html_template()
 
 

@@ -5,20 +5,38 @@ import sys
 import os
 import subprocess
 
-Debug = 0
-UrlNum = -1
-RealURL = ""
-Scale = 1
-TargetUnit = "NA"
-ConvertUnitServer = 0
+class arguments(object):
+	# def __init__(Debug=0, UrlNum=-1, RealURL="", Scale=1, TargetUnit="NA", ConvertUnitServer=0):
+		# self.Debug = Debug
+		# self.UrlNum = UrlNum
+		# self.RealURL = RealURL
+		# self.Scale = Scale
+		# self.TargetUnit = TargetUnit
+		# self.ConvertUnitServer = ConvertUnitServer
+	def __init__(self):
+		self.Debug = 0
+		self.UrlNum = -1
+		self.RealURL = ""
+		self.Scale = 1
+		self.TargetUnit = "NA"
+		self.ConvertUnitServer = 0
+		
+		
+
+# Debug = 0
+# UrlNum = -1
+# RealURL = ""
+# Scale = 1
+# TargetUnit = "NA"
+# ConvertUnitServer = 0
 
 ###############################################
 ##### find func ###############################
 global find
 def find(name, path):
-    for root, dirs, files in os.walk(path):
-        if name in files:
-            return os.path.join(root, name)
+	for root, dirs, files in os.walk(path):
+		if name in files:
+			return os.path.join(root, name)
 
 
 ###############################################
@@ -27,14 +45,15 @@ global error
 def error(string):
 	print("ERROR: " + str(string))
 	exit(1)
-	
+
+
 ###############################################
 ##### info (log) func #########################
 global info
 def info(string):
 	print("INFO: " + str(string))
 
-	
+
 ###############################################
 ##### info (log) func #########################
 global prompt
@@ -101,12 +120,7 @@ def url_to_filename(url):
 ###############################################
 ##### parseArgs func ##########################
 def parseArgs():
-	global Debug
-	global UrlNum
-	global RealURL
-	global Scale
-	global TargetUnit
-	global ConvertUnitServer
+	cmdArgs = arguments()
 	
 	cmdLine = " ".join(sys.argv)
 	info(cmdLine)
@@ -120,33 +134,28 @@ def parseArgs():
 
 	for opt, arg in opts:
 		if opt in ('-d', '--debug'):
-			Debug = arg
+			cmdArgs.Debug = arg
 		elif opt in ('-N', '--UrlNum'):
-			UrlNum = arg		
+			cmdArgs.UrlNum = arg
 		elif opt in ('-u', '--URL'):
-			RealURL = arg
+			cmdArgs.RealURL = arg
 		elif opt in ('-s', '--scale'):
-			Scale = arg
+			cmdArgs.Scale = arg
 		elif opt in ('-c', '--convert'):
-			TargetUnit = arg
+			cmdArgs.TargetUnit = arg
 			if arg != "NA":
-				ConvertUnitServer = 1
+				cmdArgs.ConvertUnitServer = 1
 			else:
-				ConvertUnitServer = 0
+				cmdArgs.ConvertUnitServer = 0
 				
-	debug(Debug, "Debug: " + str(Debug))
-	debug(Debug, "UrlNum: " + str(UrlNum))
-	debug(Debug, "RealURL: " + RealURL)
-	debug(Debug, "Scale: " + str(Scale))
-	debug(Debug, "TargetUnit: " + TargetUnit)
-	debug(Debug, "ConvertUnitServer: " + str(ConvertUnitServer))
+	debug(cmdArgs.Debug, "Debug: " + str(cmdArgs.Debug))
+	debug(cmdArgs.Debug, "UrlNum: " + str(cmdArgs.UrlNum))
+	debug(cmdArgs.Debug, "RealURL: " + cmdArgs.RealURL)
+	debug(cmdArgs.Debug, "Scale: " + str(cmdArgs.Scale))
+	debug(cmdArgs.Debug, "TargetUnit: " + cmdArgs.TargetUnit)
+	debug(cmdArgs.Debug, "ConvertUnitServer: " + str(cmdArgs.ConvertUnitServer))
 	
-	return Debug, UrlNum, RealURL, Scale, TargetUnit, ConvertUnitServer
-	
-	
-	
-	
-	
+	return cmdArgs
 
 ################################################################################################
 ################################################################################################
